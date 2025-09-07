@@ -16,7 +16,7 @@
 - Docker installed and running (`sudo systemctl enable --now docker`) and your user in `docker` group (`sudo usermod -aG docker $USER` then re-login).
 - `minikube`, `kubectl`, and `helm` installed on the EC2. If you used the earlier `ec2-setup.sh` I provided, prerequisites should already be installed.
 
-Quick install commands (if needed):
+Quick install commands:
 
 ```bash
 # update
@@ -41,7 +41,6 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 ---
 
-## Recommended workflow (step-by-step)
 
 ### 1) Start (or reset) Minikube cluster
 This repository includes a helper `cluster-setup.sh`. It will delete an existing cluster, start Minikube (Kubernetes v1.30), and store some logs you can use in your PDF.
@@ -52,13 +51,6 @@ Run:
 chmod +x cluster-setup.sh
 ./cluster-setup.sh
 ```
-
-Outputs saved:
-- `cluster-nodes.log`
-- `cluster-pods.log`
-- `cluster-gc.log` (kube-apiserver GC-related messages)
-
-**Note about the GC flag**: Kubernetes v1.30 **does not** accept the `--garbage-collector-threads` API server flag (it was removed). If you try to start Minikube with that flag the API server will fail; document this if you attempted it. The included `cluster-setup.sh` starts Minikube without that unsupported flag and captures the existing GC log lines shown by the API server (e.g., `Starting apiserver lease garbage collector`).
 
 ### 2) Enable NGINX Ingress
 ```bash
@@ -94,7 +86,7 @@ What `deploy-app.sh` does (summary):
 - `helm upgrade --install demo charts/demo-metrics --set image.repository=demo-metrics --set image.tag=0.1 --set ingress.host=${APP_HOST}`
 - waits for rollout and prints `kubectl get pods,svc,ingress` and curls `http://${APP_HOST}/` and `http://${APP_HOST}/metrics`
 
-### 4) Verify manually (if you prefer step-by-step)
+### 4) Verify manually 
 ```bash
 # build image into minikube docker
 eval $(minikube docker-env)
@@ -114,32 +106,12 @@ curl -i "http://${APP_HOST}/"
 curl -s "http://${APP_HOST}/metrics" | head -n 30
 ```
 
-### 5) What to capture for your submission (PDF + GitHub README)
-- `kubectl get nodes` screenshot or `cluster-nodes.log` output.
-- `kubectl get pods -A` / `kubectl get pods,svc,ingress` screenshot.
-- `curl http://${APP_HOST}/` output (show APP_MESSAGE).
-- `curl http://${APP_HOST}/metrics` output (show Prometheus metrics — `demo_requests_total`, `demo_response_seconds`, etc.).
-- Any error messages you encountered (e.g., attempted `--garbage-collector-threads` failure) plus the remediation/explanation.
-- Add the exact commands you ran and paste outputs (or include log files produced by the scripts).
-
-### 6) Pushing to GitHub (simple steps)
-```bash
-git init
-git add .
-git commit -m "Demo metrics app + Helm chart"
-# create repo on GitHub and push (replace URL)
-git remote add origin git@github.com:YOUR_USER/demo-metrics-app.git
-git branch -M main
-git push -u origin main
-```
-
-### 7) Cleanup
+### 5) Cleanup
 ```bash
 # delete helm release and minikube
-helm uninstall demo || true
-minikube delete || true
+helm uninstall demo
+minikube delete 
 ```
-
 ---
 
 ## Troubleshooting & Notes
@@ -159,6 +131,3 @@ ingress-setup.sh
 deploy-app.sh
 README.md                # <-- you are reading this
 ```
-
----
-If you want, I can now update the ZIP archive with this README and scripts and provide a download link. I already did this for the app+chart; now I'll add these files to the package and re-zip.
