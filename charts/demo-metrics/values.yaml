@@ -1,0 +1,29 @@
+image:
+  repository: demo-metrics
+  tag: "0.1"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  port: 80
+  targetPort: 3000
+  type: ClusterIP
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+ingress:
+  enabled: true
+  className: nginx
+  host: ""
+  path: /
+  pathType: Prefix
+
+config:
+  APP_MESSAGE: "Hello from Helm-configured app!"
